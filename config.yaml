@@ -1,0 +1,46 @@
+# Cấu hình tạo video (khổ dọc cho Reels / TikTok / Shorts)
+provider: edge                 # edge (miễn phí, không cần key) | openai  (ghi đè bằng: --provider openai)
+chunk_chars: 1500              # bài dài hơn thì tách thành nhiều lượt gọi TTS (giới hạn đầu vào)
+
+# --- OpenAI TTS (cần biến môi trường OPENAI_API_KEY) ---
+openai_model: gpt-4o-mini-tts
+openai_voice: coral            # thử: coral, nova, sage, shimmer, alloy, ash, ballad, verse, marin, cedar
+openai_instructions: >-
+  Đọc tiếng Việt giọng miền Bắc như một người dẫn bản tin thể thao đang kể chuyện: nhịp nhanh,
+  liền mạch, ngữ điệu lên xuống tự nhiên theo ý câu. Chỉ nghỉ rất ngắn ở dấu phẩy và dấu chấm,
+  nối câu mượt, không kéo dài chữ, không nhấn từng từ, không đọc đều đều từng câu rời nhau.
+openai_tempo: 1.12             # tăng tốc sau khi tạo giọng (giữ cao độ); 1.0 = giữ nguyên
+openai_max_pause: 0.3          # khoảng lặng giữa các cụm từ tối đa (giây); 0 = giữ nguyên như giọng gốc
+
+# --- edge-tts (miễn phí) ---
+voice: vi-VN-HoaiMyNeural      # nam: vi-VN-NamMinhNeural
+rate: "+8%"                    # tốc độ đọc, vd "+15%" nhanh hơn, "-5%" chậm hơn
+edge_max_pause: 0.3            # khoảng lặng giữa các cụm từ tối đa (giây); 0 = giữ nguyên
+pitch: "+0Hz"
+
+width: 1080
+height: 1920
+fps: 30
+pad: 0.4                       # giây lặng thêm cuối mỗi cảnh
+zoom: 0.06                     # mức zoom nhẹ của ảnh (0 = tắt)
+
+# Bố cục (px, theo khung 1080x1920): vùng đặt ảnh chính
+image_box: [30, 330, 1020, 1000]  # x, y, rộng, cao
+
+# Phụ đề
+font: Segoe UI
+caption_size: 76
+caption_margin_bottom: 450     # khoảng cách từ đáy khung tới đáy phụ đề (tránh vùng giao diện TikTok)
+caption_words_max: 4           # số từ tối đa mỗi dòng phụ đề
+caption_upper: false
+title_size: 68
+title_margin_top: 160
+
+# Nhạc nền: đặt file .mp3 vào templates/music/ (lấy file đầu tiên); để trống thư mục = không có nhạc
+music_volume: 0.10
+# Logo: đặt templates/logo.png (tự gắn góc trên phải nếu có)
+logo_width: 160
+
+# Mã hóa: libx264 (CPU) hoặc h264_qsv (Intel Quick Sync, nhanh hơn)
+encoder: libx264
+crf: 20

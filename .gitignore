@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.pyc
+
+# Dữ liệu từng video (bài viết, ảnh, giọng đọc) và kết quả: không đưa lên repo
+jobs/*
+!jobs/.gitkeep
+output/*
+!output/.gitkeep
+
+# Font hệ thống (bản quyền Microsoft): code tự chép từ Windows khi chạy
+templates/fonts/*
+!templates/fonts/.gitkeep
+
+# Nhạc/logo riêng của bạn
+templates/music/*
+!templates/music/.gitkeep
+templates/logo.png
