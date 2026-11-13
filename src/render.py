@@ -2,16 +2,8 @@
 
 Dùng:  .venv\\Scripts\\python.exe -m src.render <slug>
 
-script.json:
-{
-  "title": "Tiêu đề (không bắt buộc)",
-  "voice": "vi-VN-HoaiMyNeural",      # tùy chọn, ghi đè config
-  "rate": "+0%",                      # tùy chọn
-  "scenes": [
-    {"title": "Tiêu đề ngắn", "text": "Lời đọc của cảnh", "image": "images/01.jpg"}
-  ]
-}
-Đường dẫn ảnh tính từ thư mục jobs/<slug>/.
+Định dạng script.json và quy tắc viết: xem AGENTS.md (mẫu đầy đủ: examples/script.example.json).
+Kiểm tra kịch bản trước khi dựng:  .venv\\Scripts\\python.exe -m src.check <slug>
 """
 from __future__ import annotations
 
@@ -310,9 +302,13 @@ def ass_escape(s: str) -> str:
     return s.replace("{", "(").replace("}", ")").replace("\n", " ").replace("\\", "")
 
 
-def chunk_words(words: list[dict], max_words: int) -> list[list[dict]]:
+def chunk_words(words: list[dict], max_words: int, max_chars: int = 0) -> list[list[dict]]:
+    """Chia từ thành các dòng phụ đề. max_chars > 0: dòng không dài quá số ký tự đó (tránh tràn khung)."""
     chunks, cur = [], []
     for i, w in enumerate(words):
+        if cur and max_chars > 0 and sum(len(x["text"]) + 1 for x in cur) + len(w["text"]) > max_chars:
+            chunks.append(cur)
+            cur = []
         cur.append(w)
         nxt = words[i + 1] if i + 1 < len(words) else None
         gap = (nxt["start"] - (w["start"] + w["dur"])) if nxt else 99
@@ -331,7 +327,7 @@ def build_ass(cfg: dict, scenes: list[dict]) -> str:
 ScriptType: v4.00+
 PlayResX: {W}
 PlayResY: {H}
-WrapStyle: 2
+WrapStyle: 0
 ScaledBorderAndShadow: yes
 
 [V4+ Styles]
@@ -350,7 +346,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 f"Dialogue: 0,{ass_time(t0)},{ass_time(t0 + dur)},Title,,0,0,0,,"
                 f"{{\\fad(250,200)}}{ass_escape(sc['title'])}"
             )
-        chunks = chunk_words(sc["words"], cfg["caption_words_max"])
+        chunks = chunk_words(sc["words"], cfg["caption_words_max"], int(cfg.get("caption_chars_max", 0)))
         for ci, ch in enumerate(chunks):
             c_start = t0 + ch[0]["start"]
             if ci + 1 < len(chunks):
@@ -411,6 +407,12 @@ def main() -> None:
     ffmpeg, ffprobe = find_tool("ffmpeg"), find_tool("ffprobe")
     job = ROOT / "jobs" / args.slug
     spec = json.loads((job / "script.json").read_text(encoding="utf-8-sig"))  # chịu được BOM
+    from src.check import validate  # kiểm tra trước khi gọi TTS (thiếu ảnh, text rỗng, focus sai...)
+    errors, warns = validate(spec, job)
+    for w in warns:
+        print("NHẮC:", w)
+    if errors:
+        raise SystemExit("script.json có lỗi, chưa dựng:\n" + "\n".join("  LỖI: " + e for e in errors))
     cache = job / "cache"
     cache.mkdir(exist_ok=True)
 

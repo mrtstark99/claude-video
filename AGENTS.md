@@ -3,19 +3,36 @@
 Repo tạo **video dọc 9:16 (Reels/TikTok/Shorts)** từ một bài viết web. Chạy cục bộ trên Windows, không cần API trả phí.
 Người dùng nói tiếng Việt: trả lời và viết nội dung bằng tiếng Việt.
 
+Hướng dẫn này dùng cho mọi AI/agent (không riêng Claude). Yêu cầu tối thiểu: đọc/ghi được file và chạy được lệnh
+trong repo. Xem được ảnh thì tốt hơn; nếu không, làm theo mục "Khi không xem được ảnh".
+
+## Cài đặt lần đầu (bỏ qua nếu đã có `.venv`)
+```powershell
+winget install Gyan.FFmpeg
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+Thử nhanh: `.venv\Scripts\python.exe tools\make_demo_job.py` rồi `.venv\Scripts\python.exe -m src.render demo`.
+
 ## Quy trình khi người dùng đưa một URL bài viết
 1. **Lấy bài** (script Python):
    `.venv\Scripts\python.exe -m src.fetch "<url>" --slug <ten-ngan-khong-dau>`
    → tạo `jobs/<slug>/article.json` (tiêu đề, `text`, danh sách ảnh) và `jobs/<slug>/images/`.
 2. **Bạn (AI) viết kịch bản**: đọc `article.json`, **xem từng ảnh** (mở file ảnh), rồi ghi `jobs/<slug>/script.json`
    (định dạng và quy tắc bên dưới). Bước này là phần việc của AI, không có script tự làm.
-3. **Dựng video**:
-   `.venv\Scripts\python.exe -m src.render <slug>`  (đặt `PYTHONUTF8=1` nếu console báo lỗi mã hoá)
+   Nếu `article.json` có `text` rỗng hoặc quá ngắn (trang chặn bot, cần JavaScript): dừng lại và báo người dùng, **không tự bịa nội dung**.
+3. **Kiểm tra kịch bản** (bắt buộc, lặp tới khi sạch):
+   `.venv\Scripts\python.exe -m src.check <slug>`
+   → in từng dòng `LỖI :` (phải sửa, render sẽ từ chối) và `NHẮC:` (vi phạm quy tắc viết, nên sửa), kèm số từ và độ dài ước tính.
+   Sửa `script.json` rồi chạy lại cho tới khi báo "Kịch bản đạt". Chỉ để lại `NHẮC` khi có lý do rõ (vd tên riêng viết hoa như "CNBC").
+4. **Dựng video**:
+   `.venv\Scripts\python.exe -m src.render <slug>`
    → `output/<slug>.mp4`. Dựng 1 video ~75 giây mất ~1–2 phút trên CPU.
-4. **Kiểm tra** rồi báo đường dẫn file cho người dùng (xem mục Kiểm tra). Bạn không nghe được âm thanh,
+   Nếu console báo lỗi mã hoá: PowerShell chạy `$env:PYTHONUTF8 = "1"` trước; bash thì `export PYTHONUTF8=1`.
+5. **Kiểm tra video** rồi báo đường dẫn file cho người dùng (xem mục Kiểm tra). Bạn không nghe được âm thanh,
    nên nói rõ là chưa nghe và nhờ người dùng nghe thử.
 
-Chạy lại bước 3 sau khi sửa `script.json` hoặc `config.yaml`: giọng đọc có cache theo nội dung nên chỉ đọc lại khi chữ/giọng đổi.
+Chạy lại bước 3–4 sau khi sửa `script.json` hoặc `config.yaml`: giọng đọc có cache theo nội dung nên chỉ đọc lại khi chữ/giọng đổi.
 
 ## script.json
 ```json
@@ -28,13 +45,25 @@ Chạy lại bước 3 sau khi sửa `script.json` hoặc `config.yaml`: giọng
   ]
 }
 ```
-- `image`: đường dẫn tính từ `jobs/<slug>/`. Bỏ trống thì cảnh dùng nền gradient.
-- `focus` (tùy chọn): điểm quan tâm trên ảnh, toạ độ 0..1; ảnh sẽ zoom dần tới đó (trong khung ảnh). `zoom` = mức zoom cuối.
+Mẫu hoàn chỉnh đạt mọi quy tắc (6 cảnh, ~48 giây): [examples/script.example.json](examples/script.example.json). Hãy viết theo kiểu câu của mẫu đó.
+
+- Mỗi cảnh: `text` (bắt buộc), `title`, `image`, `focus`, `zoom`. Khoá khác sẽ bị bỏ qua.
+- `image`: đường dẫn tính từ `jobs/<slug>/`, phải là file có thật (lấy từ `images[].file` trong `article.json`).
+  Bỏ hẳn khoá `image` thì cảnh dùng nền gradient.
+- `focus` (tùy chọn): `[x, y]` điểm quan tâm trên ảnh, toạ độ 0..1, **gốc ở góc trên trái** (x sang phải, y xuống dưới;
+  `[0.5, 0.5]` là giữa ảnh). Ảnh sẽ zoom dần tới đó (trong khung ảnh). `zoom` = mức zoom cuối, 1..4, thường 1.3–2.0 (mặc định 1.6).
   Bài chỉ có 1–2 ảnh thì dùng `focus` để mỗi cảnh nhìn vào một phần khác nhau của ảnh.
-- Cấp ngoài có thể ghi đè `voice`, `rate`, `pitch`, `provider` (xem `config.yaml`).
+- Cấp ngoài (cạnh `scenes`) có thể ghi đè `voice`, `rate`, `pitch`, `provider` (xem `config.yaml`).
+
+### Khi không xem được ảnh
+Nếu bạn không mở/xem được file ảnh: chọn ảnh theo `alt`, `width`, `height` trong `article.json` (ưu tiên ảnh lớn, `alt` khớp nội dung cảnh),
+**không dùng `focus`** (không đoán toạ độ), xoay vòng các ảnh để hai cảnh liền nhau không trùng ảnh, và nói rõ với người dùng
+là ảnh được chọn mà chưa xem, nhờ họ kiểm tra. Ở bước kiểm tra video, nếu không xem được khung hình thì cũng nói rõ như vậy.
 
 ### Quy tắc viết kịch bản (quan trọng)
 - Dài **45–75 giây**, **5–9 cảnh**; mỗi cảnh 1–2 câu. Chỉ dùng thông tin có trong bài, **không bịa số liệu**.
+- Ước lượng độ dài: giọng mặc định đọc khoảng **4,5 từ mỗi giây**, nên cả kịch bản cần **khoảng 200–340 từ**
+  (mỗi cảnh khoảng 30–45 từ). `src.check` tính sẵn con số này.
 - **Viết số, ngày, đơn vị thành chữ** ("hai nghìn không trăm linh một", "mười bảy tuổi", "một trăm hai mươi triệu đồng");
   edge-tts đọc chữ số và từ viết tắt rất tệ. Tên riêng ngoại ngữ giữ nguyên; viết "Manchester United" thay cho "MU".
 - Giọng đọc nghe **giật nếu có quá nhiều câu cụt và dấu chấm**: ưu tiên câu dài, liền ý, nối bằng "và", "nhưng", "còn".
@@ -51,6 +80,7 @@ Chạy lại bước 3 sau khi sửa `script.json` hoặc `config.yaml`: giọng
 
 ## Kiến trúc ngắn gọn
 - `src/fetch.py`: tải bài (trafilatura + BeautifulSoup), tải ảnh (lọc ảnh nhỏ/trùng) → `article.json`.
+- `src/check.py`: kiểm tra `script.json` theo các quy tắc ở trên (render cũng tự gọi và dừng nếu có `LỖI`).
 - `src/render.py`: đọc **cả bài một mạch** (một lần gọi TTS, chia nhỏ nếu quá `chunk_chars`) → cắt khoảng lặng dài
   → lấy mốc từng từ (edge: có sẵn; openai: Whisper) → `align_words` ghép mốc vào chữ kịch bản → ranh giới cảnh đặt giữa
   khoảng lặng → phụ đề ASS tô vàng từng từ → FFmpeg dựng 1 lần (nền mờ + ảnh bo góc + zoom trong khung + phụ đề + nhạc).

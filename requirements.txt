@@ -1,0 +1,8 @@
+# Cài: .venv\Scripts\python.exe -m pip install -r requirements.txt
+edge-tts>=7.3        # cần tham số boundary="WordBoundary" (mốc thời gian từng từ)
+requests
+beautifulsoup4
+trafilatura
+Pillow
+PyYAML
+openai               # chỉ dùng khi chạy --provider openai

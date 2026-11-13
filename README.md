@@ -1,22 +1,25 @@
 # claude-video
 
 Tạo video dọc 9:16 (Reels / TikTok / Shorts) từ bài viết trên web. Chạy cục bộ: FFmpeg + edge-tts.
-Phần viết kịch bản do Claude làm trong phiên chat (không cần API key).
+Phần viết kịch bản do AI/agent (Claude hoặc agent khác đọc được `AGENTS.md`) làm trong phiên chat (không cần API key).
 
 > Hướng dẫn vận hành dành cho AI/agent (quy trình, quy tắc viết kịch bản, lưu ý môi trường): xem [AGENTS.md](AGENTS.md).
 
 ## Luồng
 ```
 A. fetch   URL  ──► jobs/<slug>/article.json + images/
-B. Claude  đọc article.json, xem ảnh ──► jobs/<slug>/script.json
+B. AI      đọc article.json, xem ảnh ──► jobs/<slug>/script.json  (rồi `src.check` để soát lỗi)
 C. render  script.json ──► output/<slug>.mp4
 ```
 
 ## Lệnh
 ```bash
 .venv\Scripts\python.exe -m src.fetch <url> [--slug ten]
+.venv\Scripts\python.exe -m src.check <slug>
 .venv\Scripts\python.exe -m src.render <slug> [--keep]
 ```
+`src.check` soát `script.json` theo quy tắc viết kịch bản (chữ số, từ viết tắt, số cảnh, độ dài ước tính, ảnh thiếu...);
+`render` cũng tự chạy bước này và dừng nếu có lỗi. Mẫu kịch bản hoàn chỉnh: [examples/script.example.json](examples/script.example.json).
 
 ## script.json
 ```json
@@ -26,7 +29,7 @@ C. render  script.json ──► output/<slug>.mp4
   ]
 }
 ```
-Tùy chọn ở cấp ngoài: `voice`, `rate`, `pitch` (ghi đè `config.yaml`).
+Tùy chọn ở cấp ngoài: `voice`, `rate`, `pitch`, `provider` (ghi đè `config.yaml`).
 Tùy chọn mỗi cảnh: `"focus": [0.2, 0.55]` (điểm quan tâm trên ảnh, toạ độ 0..1, ảnh sẽ zoom dần tới đó) và `"zoom": 1.6` (mức zoom cuối).
 Khi bài chỉ có 1–2 ảnh, dùng `focus` để mỗi cảnh nhìn vào một phần khác nhau của cùng một ảnh.
 Zoom chỉ diễn ra trong khung ảnh, không đè lên tiêu đề hay phụ đề.
@@ -50,8 +53,8 @@ Khoảng lặng giữa các cụm từ bị rút còn tối đa `*_max_pause` gi
 ```powershell
 winget install Gyan.FFmpeg
 python -m venv .venv
-.venv\Scripts\python.exe -m pip install edge-tts requests beautifulsoup4 trafilatura Pillow pyyaml openai
-python tools\make_demo_job.py
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe tools\make_demo_job.py
 .venv\Scripts\python.exe -m src.render demo
 ```
 Repo không kèm font: lần chạy đầu code tự chép Segoe UI từ `C:\Windows\Fonts` (đổi `font` trong `config.yaml` nếu dùng font khác).

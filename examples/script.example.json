@@ -1,0 +1,38 @@
+{
+  "scenes": [
+    {
+      "title": "Thư viện trong hẻm nhỏ",
+      "text": "Giữa một con hẻm nhỏ ở Đà Nẵng có một thư viện không thu tiền và không cần thẻ, nơi mỗi buổi chiều hàng chục đứa trẻ trong xóm kéo đến ngồi đọc sách cho tới khi trời tối.",
+      "image": "images/01.jpg"
+    },
+    {
+      "title": "Người thầy về hưu",
+      "text": "Người dựng nên nơi này là một thầy giáo đã nghỉ hưu, ông dành toàn bộ tầng trệt căn nhà của mình để kê kệ sách và tự tay đóng từng chiếc bàn gỗ cho bọn trẻ.",
+      "image": "images/02.jpg"
+    },
+    {
+      "title": "Từ hai trăm cuốn sách cũ",
+      "text": "Ban đầu thư viện chỉ có khoảng hai trăm cuốn sách cũ do hàng xóm góp lại, nhưng sau ba năm con số ấy đã lên tới hơn năm nghìn cuốn nhờ những thùng sách gửi về từ khắp cả nước.",
+      "image": "images/03.jpg"
+    },
+    {
+      "title": "Không ai trông coi",
+      "text": "Điều khiến nhiều người bất ngờ là ở đây không có ai đứng trông coi, bọn trẻ tự ghi tên vào sổ khi mượn sách và hầu như chưa có cuốn nào bị mất.",
+      "image": "images/03.jpg",
+      "focus": [0.7, 0.4],
+      "zoom": 1.6
+    },
+    {
+      "title": "Lớp học cuối tuần",
+      "text": "Cuối tuần các bạn sinh viên tình nguyện còn đến dạy tiếng Anh và kể chuyện, còn những đứa lớn hơn thì bắt đầu tự đọc sách cho các em nhỏ nghe.",
+      "image": "images/04.jpg"
+    },
+    {
+      "title": "Mong ước giản dị",
+      "text": "Ông bảo rằng mình không mong gì lớn lao, chỉ cần mỗi đứa trẻ rời khỏi con hẻm này mang theo thói quen đọc sách thì mọi công sức bỏ ra đã là xứng đáng.",
+      "image": "images/01.jpg",
+      "focus": [0.3, 0.6],
+      "zoom": 1.4
+    }
+  ]
+}
