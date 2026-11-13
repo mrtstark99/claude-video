@@ -2,16 +2,8 @@
 
 Dùng:  .venv\\Scripts\\python.exe -m src.render <slug>
 
-script.json:
-{
-  "title": "Tiêu đề (không bắt buộc)",
-  "voice": "vi-VN-HoaiMyNeural",      # tùy chọn, ghi đè config
-  "rate": "+0%",                      # tùy chọn
-  "scenes": [
-    {"title": "Tiêu đề ngắn", "text": "Lời đọc của cảnh", "image": "images/01.jpg"}
-  ]
-}
-Đường dẫn ảnh tính từ thư mục jobs/<slug>/.
+Định dạng script.json và quy tắc viết: xem AGENTS.md (mẫu đầy đủ: examples/script.example.json).
+Kiểm tra kịch bản trước khi dựng:  .venv\\Scripts\\python.exe -m src.check <slug>
 """
 from __future__ import annotations
 
@@ -415,11 +407,12 @@ def main() -> None:
     ffmpeg, ffprobe = find_tool("ffmpeg"), find_tool("ffprobe")
     job = ROOT / "jobs" / args.slug
     spec = json.loads((job / "script.json").read_text(encoding="utf-8-sig"))  # chịu được BOM
-    missing = [f"  cảnh {i + 1}: {sc['image']}" for i, sc in enumerate(spec["scenes"])
-               if sc.get("image") and not (job / sc["image"]).is_file()]
-    if missing:  # kiểm tra trước khi gọi TTS; trước đây cảnh âm thầm chuyển sang nền gradient
-        raise SystemExit("Không tìm thấy ảnh (đường dẫn tính từ " + str(job) + "):\n" + "\n".join(missing)
-                         + "\nSửa `image` trong script.json, hoặc bỏ trống để dùng nền gradient.")
+    from src.check import validate  # kiểm tra trước khi gọi TTS (thiếu ảnh, text rỗng, focus sai...)
+    errors, warns = validate(spec, job)
+    for w in warns:
+        print("NHẮC:", w)
+    if errors:
+        raise SystemExit("script.json có lỗi, chưa dựng:\n" + "\n".join("  LỖI: " + e for e in errors))
     cache = job / "cache"
     cache.mkdir(exist_ok=True)
 
