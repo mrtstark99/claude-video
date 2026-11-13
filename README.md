@@ -50,8 +50,8 @@ Khoảng lặng giữa các cụm từ bị rút còn tối đa `*_max_pause` gi
 ```powershell
 winget install Gyan.FFmpeg
 python -m venv .venv
-.venv\Scripts\python.exe -m pip install edge-tts requests beautifulsoup4 trafilatura Pillow pyyaml openai
-python tools\make_demo_job.py
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe tools\make_demo_job.py
 .venv\Scripts\python.exe -m src.render demo
 ```
 Repo không kèm font: lần chạy đầu code tự chép Segoe UI từ `C:\Windows\Fonts` (đổi `font` trong `config.yaml` nếu dùng font khác).

@@ -32,6 +32,7 @@ font: Segoe UI
 caption_size: 76
 caption_margin_bottom: 450     # khoảng cách từ đáy khung tới đáy phụ đề (tránh vùng giao diện TikTok)
 caption_words_max: 4           # số từ tối đa mỗi dòng phụ đề
+caption_chars_max: 22          # số ký tự tối đa mỗi dòng phụ đề (tránh tràn khung khi có tên riêng dài); 0 = không giới hạn
 caption_upper: false
 title_size: 68
 title_margin_top: 160
